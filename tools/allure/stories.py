@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class AllureStory(str, Enum):
-    ELEMENTS = "Elements"
+    TEXT_BOX = "TextBox"
     FORMS = "Forms"
     ALERTS = "Alerts"
     FRAME = "Frame"

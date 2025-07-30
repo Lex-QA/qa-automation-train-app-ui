@@ -15,10 +15,10 @@ from tools.routes import SidebarSection, SidebarItem, AppRoute
 @allure.tag(AllureTag.ELEMENTS, AllureTag.ELEMENTS)
 @allure.epic(AllureEpic.LMS)
 @allure.feature(AllureFeature.ELEMENTS)
-@allure.story(AllureStory.ELEMENTS)
+@allure.story(AllureStory.TEXT_BOX)
 @allure.parent_suite(AllureEpic.LMS)
 @allure.suite(AllureFeature.ELEMENTS)
-@allure.sub_suite(AllureStory.ELEMENTS)
+@allure.sub_suite(AllureStory.TEXT_BOX)
 class TestTextBox:
     @allure.title('Fill text box with correct data')
     @allure.severity(Severity.CRITICAL)
