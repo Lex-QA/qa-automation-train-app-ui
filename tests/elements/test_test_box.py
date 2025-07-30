@@ -37,3 +37,4 @@ class TestTextBox:
             current_address=settings.test_text_box.current_address,
             permanent_address=settings.test_text_box.permanent_address
         )
+
