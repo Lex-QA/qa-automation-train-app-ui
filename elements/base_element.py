@@ -9,25 +9,45 @@ logger = get_logger("BASE_ELEMENT")
 
 
 class BaseElement:
-    def __init__(self, page: Page, locator: str, name: str):
+    def __init__(self, page: Page, locator: str, name: str, is_xpath: bool = False):
         self.page = page
         self.name = name
         self.locator = locator
+        self.is_xpath = is_xpath
 
     @property
     def type_of(self) -> str:
         return "base element"
 
     def get_locator(self, nth: int = 0, **kwargs) -> Locator:
+        """Возвращает Playwright Locator (поддерживает ID и XPath)."""
         locator = self.locator.format(**kwargs)
-        step = f'Getting locator with "id={locator}" at index "{nth}"'
+        step = f'Getting locator "{locator}" at index "{nth}"'
 
         with allure.step(step):
             logger.info(step)
+            if self.is_xpath:
+                return self.page.locator(f'xpath={locator}').nth(nth)
             return self.page.locator(f'#{locator}').nth(nth)
 
     def get_raw_locator(self, nth: int = 0, **kwargs) -> str:
+        """Возвращает сырой XPath (для трекинга покрытия)."""
+        if self.is_xpath:
+            formatted_locator = self.locator.format(**kwargs)
+            # Если locator уже XPath, добавляем индекс (если nth > 0)
+            if nth > 0:
+                return f"({formatted_locator})[{nth + 1}]"
+            return formatted_locator
         return f"//*[@id='{self.locator.format(**kwargs)}'][{nth + 1}]"
+
+    def get_custom_locator(self, custom_xpath: str, nth: int = 0, **kwargs) -> Locator:
+        """Возвращает Locator для произвольного XPath (не только ID)."""
+        formatted_xpath = custom_xpath.format(**kwargs)
+        step = f'Getting custom XPath locator "{formatted_xpath}" at index "{nth}"'
+
+        with allure.step(step):
+            logger.info(step)
+            return self.page.locator(f'xpath={formatted_xpath}').nth(nth)
 
     def track_coverage(self, action_type: ActionType, nth: int = 0, **kwargs):
         tracker.track_coverage(

@@ -19,6 +19,29 @@ class BasePage:
             logger.info(step)
             self.page.goto(url, wait_until='networkidle')
 
+    def visit_by_click(self, url, section: str, item: str):
+        step = f'Opening page by clicking on sidebar item: {section} -> {item.value}'
+
+        with allure.step(step):
+            logger.info(step)
+            self.page.goto(" http://85.192.34.140:8081", wait_until='networkidle')
+
+            # Исправленный локатор для категории (используем XPath вместо CSS)
+            category_locator = self.page.locator(
+                f'xpath=//div[@class="card mt-4 top-card"][{section.value}]'
+            )
+            category_locator.click()
+            self.page.wait_for_load_state('networkidle')
+
+            # Локатор для пункта меню
+            menu_item = self.page.locator(
+                f'xpath=//span[text()="{item.value}"]'
+            )
+
+            # Кликаем по пункту меню
+            menu_item.click()
+            self.page.wait_for_load_state('networkidle')
+
     def reload(self):
         step = f'Reloading page with url "{self.page.url}"'
 
