@@ -3,7 +3,7 @@ stages:
   - report
   - deploy
 
-image: mcr.microsoft.com/playwright/python:v1.44.0-jammy
+image: python:3.13-slim
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -22,17 +22,17 @@ cache:
     - $COVERAGE_HISTORY_FILE
 
 before_script:
+  - apt-get update && apt-get install -y wget curl gnupg unzip fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libxcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libgtk-3-0 libasound2 libnss3 libxss1 lsb-release xdg-utils
   - python -m pip install --upgrade pip
   - pip install -r requirements.txt
-  - pip install allure-pytest
+  - pip install playwright
   - playwright install --with-deps
+  - pip install allure-pytest
 
 test:
   stage: test
   script:
-    - echo "Running Playwright tests"
     - pytest -m regression --alluredir=$ALLURE_RESULTS_DIR --numprocesses=2
-    - echo "Saving coverage report"
     - ui-coverage-tool save-report
   artifacts:
     when: always
