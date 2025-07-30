@@ -11,7 +11,7 @@ class Browser(str, Enum):
     CHROMIUM = "chromium"
 
 
-class TestTextBox(BaseModel):
+class TestUser(BaseModel):
     full_name: str
     email: EmailStr
     current_address: str
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     app_url: HttpUrl
     headless: bool
     browsers: list[Browser]
-    test_text_box: TestTextBox
+    test_user: TestUser
     test_data: TestData
     videos_dir: DirectoryPath
     tracing_dir: DirectoryPath

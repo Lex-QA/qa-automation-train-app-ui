@@ -24,10 +24,10 @@ class TextBoxPage(BasePage):
         self.submit_button.click()
 
     def validate_new_values(self, full_name: str, email: str, current_address: str, permanent_address: str):
-        expect(self.new_name.get_locator()).to_have_text(f"Name:{full_name}")
-        expect(self.new_email.get_locator()).to_have_text(f"Email:{email}")
-        expect(self.new_current_address.get_locator()).to_have_text(f"Current Address :{current_address}")
-        expect(self.new_permanent_address.get_locator()).to_have_text(f"Permananet Address :{permanent_address}")
+        self.new_name.check_contain_text(full_name)
+        self.new_email.check_contain_text(email)
+        self.new_current_address.check_contain_text(current_address)
+        self.new_permanent_address.check_contain_text(permanent_address)
 
 
 

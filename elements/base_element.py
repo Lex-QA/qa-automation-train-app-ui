@@ -85,3 +85,13 @@ class BaseElement:
             expect(locator).to_have_text(text)
 
         self.track_coverage(ActionType.TEXT, nth, **kwargs)
+
+    def check_contain_text(self, text: str, nth: int = 0, **kwargs):
+        step = f'Checking that {self.type_of} "{self.name}" has "{text}"'
+
+        with allure.step(step):
+            locator = self.get_locator(nth, **kwargs)
+            logger.info(step)
+            expect(locator).to_contain_text(text)
+
+        self.track_coverage(ActionType.TEXT, nth, **kwargs)
