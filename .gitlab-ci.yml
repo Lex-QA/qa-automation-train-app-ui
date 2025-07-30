@@ -1,0 +1,87 @@
+stages:
+  - test
+  - report
+  - deploy
+
+image: mcr.microsoft.com/playwright/python:v1.44.0-jammy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  ALLURE_VERSION: "2.27.0"
+  ALLURE_HOME: "$CI_PROJECT_DIR/allure"
+  ALLURE_RESULTS_DIR: "allure-results"
+  ALLURE_REPORT_DIR: "public"
+  HISTORY_DIR: "allure-history"
+  COVERAGE_HISTORY_FILE: "coverage-history.json"
+
+cache:
+  key: ui-tests-cache
+  paths:
+    - .cache/pip
+    - $HISTORY_DIR
+    - $COVERAGE_HISTORY_FILE
+
+before_script:
+  - python -m pip install --upgrade pip
+  - pip install -r requirements.txt
+  - pip install allure-pytest
+  - playwright install --with-deps
+
+test:
+  stage: test
+  script:
+    - echo "Running Playwright tests"
+    - pytest -m regression --alluredir=$ALLURE_RESULTS_DIR --numprocesses=2
+    - echo "Saving coverage report"
+    - ui-coverage-tool save-report
+  artifacts:
+    when: always
+    paths:
+      - $ALLURE_RESULTS_DIR/
+      - coverage.html
+      - $COVERAGE_HISTORY_FILE
+    expire_in: 1 week
+
+generate-report:
+  stage: report
+  image: ubuntu:22.04
+  dependencies:
+    - test
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk curl unzip xz-utils
+    - curl -L -o allure.tgz "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz"
+    - tar -xzf allure.tgz
+    - mv "allure-${ALLURE_VERSION}" "$ALLURE_HOME"
+    - export PATH="$ALLURE_HOME/bin:$PATH"
+  script:
+    - echo "== Restoring Allure history =="
+    - if [ -d $HISTORY_DIR ]; then cp -rv $HISTORY_DIR $ALLURE_RESULTS_DIR/history; else echo "No previous history found."; fi
+
+    - echo "== Generating Allure report =="
+    - mkdir -p $ALLURE_REPORT_DIR
+    - allure generate $ALLURE_RESULTS_DIR --clean -o $ALLURE_REPORT_DIR
+
+    - echo "== Saving Allure history =="
+    - rm -rf $HISTORY_DIR
+    - cp -rv $ALLURE_REPORT_DIR/history $HISTORY_DIR || echo "Nothing to save"
+
+    - echo "== Copying coverage report =="
+    - cp coverage.html $ALLURE_REPORT_DIR/
+  artifacts:
+    paths:
+      - $ALLURE_REPORT_DIR
+      - $HISTORY_DIR
+      - $COVERAGE_HISTORY_FILE
+    expire_in: 1 week
+
+pages:
+  stage: deploy
+  dependencies:
+    - generate-report
+  script:
+    - echo "Deploying Allure report and coverage to GitLab Pages"
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
